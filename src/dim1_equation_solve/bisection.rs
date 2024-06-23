@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Range, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 use crate::{
     continuous_func::ContinuousFn,
@@ -7,99 +7,7 @@ use crate::{
     float_traits::{Abs, FloatConst, FromF64, MaxMin},
 };
 
-use super::find_root::FindRootProblem;
-
-#[derive(Clone, Copy, Debug)]
-pub struct IterStopCondition<T> {
-    x_tolorency: T,
-    y_tolorency: T,
-    iter_count_limit: Option<usize>,
-}
-
-impl<T: FloatConst + PartialOrd + FromF64 + Copy> IterStopCondition<T> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn with_x_tolorency(mut self, x_tol: T) -> Self {
-        assert!(x_tol >= fl!(0.0));
-        self.x_tolorency = x_tol;
-        self
-    }
-
-    pub fn with_y_tolorency(mut self, y_tol: T) -> Self {
-        assert!(y_tol >= fl!(0.0));
-        self.y_tolorency = y_tol;
-        self
-    }
-
-    pub fn with_iter_count_limit(mut self, limit: usize) -> Self {
-        self.iter_count_limit = Some(limit);
-        self
-    }
-
-    pub fn x_tolorency(&self) -> T {
-        self.x_tolorency
-    }
-
-    pub fn y_tolorency(&self) -> T {
-        self.y_tolorency
-    }
-
-    pub fn iter_count_limit(&self) -> Option<usize> {
-        self.iter_count_limit
-    }
-}
-
-impl<T: FloatConst> Default for IterStopCondition<T> {
-    fn default() -> Self {
-        Self {
-            x_tolorency: T::EPSILON,
-            y_tolorency: T::EPSILON,
-            iter_count_limit: None,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum StopReason {
-    TolorencyX,
-    TolorencyY,
-    IterCountLimit,
-}
-
-#[derive(Clone, Debug)]
-pub struct SolveResult<T> {
-    root_range: Range<T>,
-    iter_count: usize,
-    stop_reason: StopReason,
-}
-
-impl<T> SolveResult<T>
-where
-    T: Clone,
-{
-    pub fn root_range(&self) -> Range<T> {
-        self.root_range.clone()
-    }
-
-    pub fn iter_count(&self) -> usize {
-        self.iter_count
-    }
-
-    pub fn stop_reason(&self) -> StopReason {
-        self.stop_reason
-    }
-}
-
-impl<T> SolveResult<T>
-where
-    T: Clone + Add<Output = T> + Div<Output = T> + FromF64 + Copy,
-{
-    pub fn apporx_root(&self) -> T {
-        (self.root_range.start + self.root_range.end) / fl!(2.0)
-    }
-}
+use super::find_root::{FindRootProblem, IterStopCondition, SolveResult, StopReason};
 
 pub fn bisection_solve<T, F>(
     problem: &FindRootProblem<T, F>,
