@@ -48,3 +48,24 @@ impl Abs for f64 {
         f64::abs(self)
     }
 }
+
+pub trait MaxMin: PartialOrd + Sized {
+    fn max(self, other: Self) -> Self {
+        if self >= other {
+            self
+        } else {
+            other
+        }
+    }
+
+    fn min(self, other: Self) -> Self {
+        if self <= other {
+            self
+        } else {
+            other
+        }
+    }
+}
+
+impl MaxMin for f32 {}
+impl MaxMin for f64 {}

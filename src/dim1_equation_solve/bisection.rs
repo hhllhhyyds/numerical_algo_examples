@@ -4,7 +4,7 @@ use crate::{
     continuous_func::ContinuousFn,
     dim1_func::Dim1Fn,
     fl,
-    float_traits::{Abs, FloatConst, FromF64},
+    float_traits::{Abs, FloatConst, FromF64, MaxMin},
 };
 
 use super::find_root::FindRootProblem;
@@ -108,10 +108,12 @@ pub fn bisection_solve<T, F>(
 where
     T: Mul<Output = T>
         + PartialOrd
+        + MaxMin
         + FromF64
         + Copy
         + Sub<Output = T>
         + Div<Output = T>
+        + Mul<Output = T>
         + FloatConst
         + Add<Output = T>
         + Abs,
@@ -131,7 +133,7 @@ where
             }
         }
 
-        if (b - a) / fl!(2.0) <= stop_cond.x_tolorency() {
+        if (b - a) <= stop_cond.x_tolorency() * fl!(2.0) * a.max(fl!(1.0)) {
             break StopReason::TolorencyX;
         }
 
@@ -162,7 +164,7 @@ where
 mod tests {
     use super::*;
 
-    use approx::AbsDiffEq;
+    use approx::{AbsDiffEq, RelativeEq};
 
     use crate::dim1_func;
 
@@ -200,5 +202,17 @@ mod tests {
         assert!(result.stop_reason() == StopReason::IterCountLimit);
         assert!(result.iter_count() == 10);
         assert!(result.apporx_root().abs_diff_ne(&-1.0, 1e-6));
+    }
+
+    #[test]
+    fn test_large_abs_root() {
+        let f = dim1_func::Linear { a: -1e-4, b: 1.0 };
+        let problem = FindRootProblem::new(f, 9000.0..20000.0);
+        let stop_cond = IterStopCondition::new().with_x_tolorency(1e-13);
+        let result = bisection_solve(&problem, &stop_cond);
+        println!("iter count = {}", result.iter_count());
+        println!("root = {}", result.apporx_root());
+        assert!(result.stop_reason() == StopReason::TolorencyX);
+        assert!(result.apporx_root().relative_eq(&10000.0, 1e-16, 1e-13));
     }
 }
