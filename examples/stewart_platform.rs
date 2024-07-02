@@ -215,7 +215,7 @@ async fn main() {
         draw_point(fix2, BLACK);
         draw_point(fix3, BLACK);
 
-        draw_line(fix1, fix1 + (tri.p1() - fix1).normalize() * len1, BLUE);
+        draw_line(fix1, fix1 + (tri.p1() - fix1).normalize() * len1, PINK);
         draw_line(fix2, fix2 + (tri.p2() - fix2).normalize() * len2, BLUE);
         draw_line(fix3, fix3 + (tri.p3() - fix3).normalize() * len3, BLUE);
 
