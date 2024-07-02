@@ -1,14 +1,13 @@
-pub trait FromF64 {
-    fn from_f64(x: f64) -> Self;
-}
-
-#[macro_export]
 macro_rules! fl {
     ($x: literal) => {
         FromF64::from_f64($x)
     };
 }
 pub(crate) use fl;
+
+pub trait FromF64 {
+    fn from_f64(x: f64) -> Self;
+}
 
 impl FromF64 for f32 {
     #[inline]
@@ -42,9 +41,9 @@ impl FloatConst for f64 {
     const ONE: Self = 1.0;
 }
 
-pub trait Abs: std::ops::Neg<Output = Self> + FromF64 + PartialOrd + Sized {
+pub trait Abs: std::ops::Neg<Output = Self> + FloatConst + PartialOrd + Sized {
     fn abs(self) -> Self {
-        if self > fl!(0.0) {
+        if self > Self::ZERO {
             self
         } else {
             -self

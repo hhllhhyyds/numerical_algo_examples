@@ -99,7 +99,7 @@ pub enum StopReason {
     IterCountLimit,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct SolveResult<T> {
     pub(super) root: T,
     pub(super) iter_count: usize,

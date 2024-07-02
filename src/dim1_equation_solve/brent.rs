@@ -6,8 +6,7 @@ use std::{
 use crate::{
     continuous_func::ContinuousFn,
     dim1_func::Dim1Fn,
-    fl,
-    float_traits::{Abs, FloatConst, FromF64, MaxMin},
+    float_traits::{fl, Abs, FloatConst, FromF64, MaxMin},
 };
 
 use super::find_root::{FindRootProblem, IterStopCondition, SolveResult, StopReason};
@@ -98,7 +97,6 @@ where
                 };
             }
             if root_state.insert(p) {
-                println!("IQI");
                 iter_count += 1;
                 continue;
             }
@@ -117,7 +115,6 @@ where
                 };
             }
             if root_state.insert(p) {
-                println!("regula_falsi");
                 iter_count += 1;
                 continue;
             }
@@ -142,7 +139,6 @@ where
             root_state.mid = gen_next_point((root_state.left.x + root_state.right.x) / fl!(2.0));
             root_state.dup =
                 root_state.left.x == root_state.mid.x || root_state.right.x == root_state.mid.x;
-            println!("bisection");
             iter_count += 1;
         }
     }
@@ -172,8 +168,10 @@ where
         + Sub<Output = T>
         + Div<Output = T>
         + Copy
-        + FloatConst,
+        + FloatConst
+        + FromF64,
 {
+    #[allow(clippy::collapsible_else_if)]
     pub fn insert(&mut self, p: Point<T>) -> bool {
         debug_assert!(self.left.y * self.right.y <= T::ZERO);
 

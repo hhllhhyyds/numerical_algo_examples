@@ -3,12 +3,12 @@ use std::ops::{Add, Div, Mul, Sub};
 use crate::{
     continuous_func::ContinuousFn,
     dim1_func::Dim1Fn,
-    fl,
-    float_traits::{Abs, FloatConst, FromF64, MaxMin},
+    float_traits::{fl, Abs, FloatConst, FromF64, MaxMin},
 };
 
 use super::find_root::{FindRootProblem, IterStopCondition, SolveResult, StopReason};
 
+#[allow(clippy::collapsible_else_if)]
 pub fn bisection_solve<T, F>(
     problem: &FindRootProblem<T, F>,
     stop_cond: &IterStopCondition<T>,
@@ -23,7 +23,8 @@ where
         + Mul<Output = T>
         + FloatConst
         + Add<Output = T>
-        + Abs,
+        + Abs
+        + FromF64,
     F: ContinuousFn + Dim1Fn<T>,
 {
     debug_assert!(problem.is_valid());
