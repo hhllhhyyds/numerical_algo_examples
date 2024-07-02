@@ -297,9 +297,6 @@ where
         + Copy
         + PartialOrd,
 {
-    debug_assert!(A != B);
-    debug_assert!(B != C);
-    debug_assert!(A != C);
     let q = A / B;
     let r = C / B;
     let s = C / A;
@@ -313,7 +310,6 @@ fn regula_falsi<T>((a, b): (T, T), (A, B): (T, T)) -> T
 where
     T: Sub<Output = T> + Mul<Output = T> + Div<Output = T> + Copy + PartialEq,
 {
-    debug_assert!(A != B);
     (b * A - a * B) / (A - B)
 }
 
