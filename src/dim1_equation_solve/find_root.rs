@@ -1,12 +1,8 @@
-use std::ops::{Add, Div, Mul, Range};
+use std::ops::{Mul, Range};
 
-use crate::{
-    continuous_func::ContinuousFn,
-    dim1_func::Dim1Fn,
-    fl,
-    float_traits::{FloatConst, FromF64},
-};
+use crate::{continuous_func::ContinuousFn, dim1_func::Dim1Fn, float_traits::FloatConst};
 
+#[derive(Clone, Debug)]
 pub struct FindRootProblem<T, F> {
     func: F,
     search_range: Range<T>,
@@ -20,13 +16,13 @@ impl<T, F> FindRootProblem<T, F> {
 
 impl<T, F> FindRootProblem<T, F>
 where
-    T: Mul<Output = T> + PartialOrd + FromF64 + Copy,
+    T: Mul<Output = T> + PartialOrd + Copy + FloatConst,
     F: ContinuousFn + Dim1Fn<T>,
 {
     pub fn is_valid(&self) -> bool {
         let f_a = self.func.eval(self.search_range.start);
         let f_b = self.func.eval(self.search_range.end);
-        f_a * f_b <= fl!(0.0)
+        f_a * f_b <= T::ZERO
     }
 
     pub fn new(func: F, search_range: Range<T>) -> Self {
@@ -51,19 +47,19 @@ pub struct IterStopCondition<T> {
     iter_count_limit: Option<usize>,
 }
 
-impl<T: FloatConst + PartialOrd + FromF64 + Copy> IterStopCondition<T> {
+impl<T: FloatConst + PartialOrd + FloatConst + Copy> IterStopCondition<T> {
     pub fn new() -> Self {
         Self::default()
     }
 
     pub fn with_x_tolorency(mut self, x_tol: T) -> Self {
-        assert!(x_tol >= fl!(0.0));
+        assert!(x_tol >= T::ZERO);
         self.x_tolorency = x_tol;
         self
     }
 
     pub fn with_y_tolorency(mut self, y_tol: T) -> Self {
-        assert!(y_tol >= fl!(0.0));
+        assert!(y_tol >= T::ZERO);
         self.y_tolorency = y_tol;
         self
     }
@@ -90,7 +86,7 @@ impl<T: FloatConst> Default for IterStopCondition<T> {
     fn default() -> Self {
         Self {
             x_tolorency: T::EPSILON,
-            y_tolorency: T::EPSILON,
+            y_tolorency: T::ZERO,
             iter_count_limit: None,
         }
     }
@@ -105,7 +101,7 @@ pub enum StopReason {
 
 #[derive(Clone, Debug)]
 pub struct SolveResult<T> {
-    pub(super) root_range: Range<T>,
+    pub(super) root: T,
     pub(super) iter_count: usize,
     pub(super) stop_reason: StopReason,
 }
@@ -114,8 +110,8 @@ impl<T> SolveResult<T>
 where
     T: Clone,
 {
-    pub fn root_range(&self) -> Range<T> {
-        self.root_range.clone()
+    pub fn root(&self) -> T {
+        self.root.clone()
     }
 
     pub fn iter_count(&self) -> usize {
@@ -127,28 +123,22 @@ where
     }
 }
 
-impl<T> SolveResult<T>
-where
-    T: Clone + Add<Output = T> + Div<Output = T> + FromF64 + Copy,
-{
-    pub fn apporx_root(&self) -> T {
-        (self.root_range.start + self.root_range.end) / fl!(2.0)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::dim1_func;
+    use crate::dim1_func::polynomial::Polynomial;
 
     use super::*;
 
     #[test]
     fn test_new() {
-        let problem = FindRootProblem::new(dim1_func::Linear { a: 1.0, b: 1.0 }, -1.0..3.0);
+        let problem =
+            FindRootProblem::new(Polynomial::new(1.0).with_coefficients(&[1.0]), -1.0..3.0);
         assert!(problem.is_valid());
 
-        let problem =
-            FindRootProblem::new_unchecked(dim1_func::Linear { a: 1.0, b: 1.0 }, 1.0..2.0);
+        let problem = FindRootProblem::new_unchecked(
+            Polynomial::new(1.0).with_coefficients(&[1.0]),
+            1.0..2.0,
+        );
         assert!(!problem.is_valid());
 
         assert!(problem.func_eval(2.0) == 3.0);
